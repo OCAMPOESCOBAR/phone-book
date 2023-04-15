@@ -2,7 +2,6 @@ import * as React from "react";
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
-import CardMedia from "@mui/material/CardMedia";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import Collapse from "@mui/material/Collapse";
@@ -10,10 +9,7 @@ import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import { red } from "@mui/material/colors";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -30,21 +26,10 @@ const ExpandMore = styled((props) => {
   }),
 }));
 
-const validatePhoneNumber = (value) => {
-  let isValid;
-  const regexCellphone = /^\(?\d{3}\)?(\d{3})(\d{4})$/;
-  const regexPhone = /^\(?\d{3}\)?(\d{4})$/;
-  if (regexCellphone.test(value) || regexPhone.test(value)) {
-    isValid = true;
-  } else {
-    isValid = false;
-  }
-  return isValid;
-};
-
 export default function RecipeReviewCard() {
   const [expanded, setExpanded] = React.useState(true);
   const [name, setName] = React.useState("");
+  const [search, setSearch] = React.useState("");
   const [lastname, setLastname] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [errors, setErrors] = React.useState({
@@ -53,6 +38,31 @@ export default function RecipeReviewCard() {
     phone: { isInvalid: false, msg: "" },
   });
   const { phoneBookList, setPhoneBookList } = usePhoneBookList();
+  const [phoneBookListFilter, setPhoneBookListFilter] =
+    React.useState(phoneBookList);
+
+  React.useEffect(() => {
+    if (search !== "") {
+      const list = [...phoneBookList];
+      const listFilter = list.filter((i) => {
+        if (
+          i.name.toLowerCase().includes(search) ||
+          i.lastname.toLowerCase().includes(search) ||
+          i.phone.toLowerCase().includes(search)
+        ) {
+          return i;
+        }
+      });
+      setPhoneBookListFilter(listFilter);
+    } else {
+      const list = [...phoneBookList];
+      setPhoneBookListFilter(list);
+    }
+  }, [search]);
+
+  const onChangeSearch = (e) => {
+    setSearch(e.target.value.toLowerCase());
+  };
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -79,7 +89,7 @@ export default function RecipeReviewCard() {
       ...errors,
       phone: { isInvalid: false, msg: "" },
     });
-    setPhone(e.target.value);
+    setPhone(e.target.value.toString());
   };
 
   const handleAdd = () => {
@@ -105,10 +115,13 @@ export default function RecipeReviewCard() {
         phone: { isInvalid: true, msg: "Introduzca el teléfono" },
       });
     }
-    if(name !== "" && lastname !== "" && phone !== ""){
+    if (name !== "" && lastname !== "" && phone !== "") {
       const contacts = [...phoneBookList];
-      contacts.push({id: phoneBookList.length, name, lastname, phone});
+      contacts.push({ id: phoneBookList.length, name, lastname, phone });
       setPhoneBookList(contacts);
+      setName("");
+      setLastname("");
+      setPhone("");
     }
   };
 
@@ -176,7 +189,7 @@ export default function RecipeReviewCard() {
           <CardActions
             disableSpacing
             onClick={handleExpandClick}
-            sx={{ padding: "0 16px", cursor: 'pointer' }}
+            sx={{ padding: "0 16px", cursor: "pointer" }}
           >
             <Typography variant="spam" gutterBottom sx={{ fontWeight: "500" }}>
               Ver contactos
@@ -191,19 +204,62 @@ export default function RecipeReviewCard() {
           </CardActions>
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <CardContent>
-              {phoneBookList.map((i) => (
-                <CardHeader
-                  key={i.id}
-                  sx={{ padding: 0, mb: 2 }}
-                  avatar={
-                    <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                      {i.name?.charAt(0)}
-                    </Avatar>
-                  }
-                  title={`${i.name} ${i.lastname}`}
-                  subheader={i.phone}
-                />
-              ))}
+              <TextField
+                sx={{
+                  marginBottom: "16px",
+                  marginTop: 0,
+                }}
+                fullWidth
+                id="standard-basic"
+                label="Buscar"
+                variant="outlined"
+                size="small"
+                value={search}
+                onChange={onChangeSearch}
+              />
+              {
+                <>
+                  {search !== "" ? (
+                    <>
+                      {phoneBookListFilter.map((i) => (
+                        <CardHeader
+                          key={i.id}
+                          sx={{ padding: 0, mb: 2 }}
+                          avatar={
+                            <Avatar
+                              sx={{ bgcolor: red[500] }}
+                              aria-label="recipe"
+                            >
+                              {i.name?.charAt(0)}
+                            </Avatar>
+                          }
+                          title={`${i.name} ${i.lastname}`}
+                          subheader={i.phone}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {phoneBookList.map((i) => (
+                        <CardHeader
+                          key={i.id}
+                          sx={{ padding: 0, mb: 2 }}
+                          avatar={
+                            <Avatar
+                              sx={{ bgcolor: red[500] }}
+                              aria-label="recipe"
+                            >
+                              {i.name?.charAt(0)}
+                            </Avatar>
+                          }
+                          title={`${i.name} ${i.lastname}`}
+                          subheader={i.phone}
+                        />
+                      ))}
+                    </>
+                  )}
+                </>
+              }
             </CardContent>
           </Collapse>
         </Card>
