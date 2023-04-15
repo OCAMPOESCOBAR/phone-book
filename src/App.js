@@ -105,14 +105,12 @@ export default function RecipeReviewCard() {
         phone: { isInvalid: true, msg: "Introduzca el teléfono" },
       });
     }
-    if(name != "" && lastname != "" && phone != ""){
+    if(name !== "" && lastname !== "" && phone !== ""){
       const contacts = [...phoneBookList];
       contacts.push({id: phoneBookList.length, name, lastname, phone});
       setPhoneBookList(contacts);
     }
   };
-
-  console.log(phoneBookList, errors)
 
   return (
     <Box
@@ -166,6 +164,7 @@ export default function RecipeReviewCard() {
               label="Teléfono"
               variant="standard"
               value={phone}
+              type="number"
               helperText={errors.phone.msg}
               onChange={onChangePhone}
             />
